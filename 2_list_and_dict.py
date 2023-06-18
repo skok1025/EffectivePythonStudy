@@ -1,3 +1,21 @@
+# slice
+a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+print('가운데 2개', a[3:5])
+
+assert a[:5] == a[0:5]
+
+b = a[:]
+assert b == a and b is not a
+print(b == a)
+print(b is not a)
+
+car_age = [0, 9, 4, 10, 20, 1, 3, 4]
+car_age_descending = sorted(car_age, reverse=True)
+
+oldest, second_oldest, *other = car_age_descending
+
+print(oldest, second_oldest, other)
+
 car_ages = [0, 4, 10, 26, 37]
 car_ages_descending = sorted(car_ages, reverse=True)
 print(car_ages_descending)
