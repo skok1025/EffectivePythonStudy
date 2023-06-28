@@ -49,7 +49,7 @@ else:
     print(f'Result is {result:.1f}')
 
 
-# better way 22 변수 위치 인자를 사용해 시각적인 잡을을 줄여라
+# [better way 22] 변수 위치 인자를 사용해 시각적인 잡을을 줄여라
 def log(message, values):
     if not values:
         print(message)
@@ -84,7 +84,7 @@ my_func(*it)
 # *args 를 받는 부분의 인자의 개수가 충분히 작다는 사실을 이미 알고 있는 경우에 적합하다.
 # 그렇지 않으면 메모리를 많이 소비하거나 프로그램이 중단될 수 있다.
 
-# better way 23 키워드 인자로 선택적인 기능을 제공하라
+# [better way 23] 키워드 인자로 선택적인 기능을 제공하라
 def remainder(number, divisor):
     return number % divisor
 assert remainder(20, 7) == 6
@@ -112,3 +112,152 @@ def print_parameters(**kwargs):
         print(f'{key} = {value}')
 
 print_parameters(alpha=1.5, beta=9, 감마=4, kim=123)
+
+from time import sleep
+from datetime import datetime
+# [better way 24] None 과 독스트링을 사용해 동적인 디폴트 인자를 지정하라
+
+# 함수의 디폴트 값은 모듈이 로드되는 시점에 딱 한번만 평가된다.
+# 그래서 아래 when 은 값은 값이 들어감. 함수가 호출될때마다 계속 같은 값이 들어간다.
+def log(message, when=datetime.now()):
+    print(f'{when}: {message}')
+
+log('Hi there!')
+sleep(0.1)
+log('Hi again!')
+
+
+def log(message, when=None):
+    """
+    Log a message with a timestamp.
+    :param message:
+    :param when: 메세지가 발생한 시각(datetime) 디폴트값은 현재시각이다.
+    :return:
+    """
+    if when is None:
+        when = datetime.now()
+    print(f'{when}: {message}')
+
+log('Hi there!')
+sleep(0.1)
+log('Hi again!')
+
+import json
+
+def decode(data, default={}):
+    try:
+        return json.loads(data)
+    except ValueError:
+        return default
+
+foo = decode('bad data')
+foo['stuff'] = 5
+bar = decode('also bad')
+bar['meep'] = 1
+
+# foo 와 bar 가 같은 딕셔너리를 참조한다.
+print('Foo:', foo) # Foo: {'stuff': 5, 'meep': 1}
+print('Bar:', bar) # Bar: {'stuff': 5, 'meep': 1}
+
+assert foo is bar
+
+def decode(data, default=None):
+    """
+    Load JSON data from a string.
+    :param data: JSON data to decode
+    :param default: Value to return if decoding fails.
+    :return:
+    """
+    try:
+        return json.loads(data)
+    except ValueError:
+        if default is None:
+            default = {}
+        return default
+
+foo = decode('bad data')
+foo['stuff'] = 5
+bar = decode('also bad')
+bar['meep'] = 1
+print('Foo:', foo) # Foo: {'stuff': 5}
+print('Bar:', bar) # Bar: {'meep': 1}
+assert foo is not bar
+
+from typing import Optional
+def log_typed(message: str,
+              when: Optional[datetime] = datetime.now()) -> None:
+    """
+    Log a message with a timestamp.
+    :param message:
+    :param when:
+    :return:
+    """
+    if when is None:
+        when = datetime.now()
+    print(f'{when}: {message}')
+
+# [better way 25] 위치로만 인자를 지정하게 하거나 키워드로만 인자를 지정하게 해서 함수 호출을 명확하게 만들라
+
+def safe_division(number, divisor, ignore_overflow=False, igore_zero_division=False):
+    try:
+        return number / divisor
+    except OverflowError:
+        if ignore_overflow:
+            return 0
+        else:
+            raise
+    except ZeroDivisionError:
+        if igore_zero_division:
+            return float('inf')
+        else:
+            raise
+
+result = safe_division(1.0, 10**500, True, False)
+print(result) # 0.0
+
+result = safe_division(1.0, 0, False, True)
+print(result) # inf
+
+result = safe_division(1.0, 10**500, ignore_overflow=True)
+print(result) # 0
+
+# * 기호는 위치 인자의 마지막과 키워드만 사용하는 인자의 시작을 구분해준다.
+def safe_division_c(number, divisor, *,
+                    ignore_overflow=False,
+                    ignore_zero_division=False):
+    try:
+        return number / divisor
+    except OverflowError:
+        if ignore_overflow:
+            return 0
+        else:
+            raise
+    except ZeroDivisionError:
+        if ignore_zero_division:
+            return float('inf')
+        else:
+            raise
+#safe_division_c(1.0, 10**500, True, False) # TypeError: safe_division_c() takes 2 positional arguments but 4 were given
+
+# [better way 26] functools.wraps 를 사용해 함수 데코레이터를 정의하라
+
+from functools import wraps
+
+def trace(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        print(f'{func.__name__}({args!r}, {kwargs!r})'
+              f' -> {result!r}')
+        return result
+    return wrapper
+
+@trace
+def fibonacci(n):
+    """Return the n-th Fibonacci number"""
+    if n in (0,1):
+        return n
+    return (fibonacci(n-2) + fibonacci(n-1))
+
+fibonacci(4)
+print(fibonacci) # <function trace.<locals>.wrapper at 0x0000020F4F4F1D08>

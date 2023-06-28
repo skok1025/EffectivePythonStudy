@@ -128,3 +128,10 @@ if count >= 4:
 
 if (count2 := fresh_fruit.get('바나나', 0)) >= 4:
     print('바나나 4개 이상')
+
+a = b'h\x65llo'
+print(list(a))
+print(a)
+a = 'a\u0300 propos'
+print(list(a))
+print(a)
