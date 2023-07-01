@@ -135,3 +135,82 @@ print(a)
 a = 'a\u0300 propos'
 print(list(a))
 print(a)
+
+# [betterway 10] 대입식을 사용해 반복을 피하라
+# 대입식은 대입문이 쓰일 수 없는 위치에서 변수에 값을 대입할 수 있으므로 유용하다.
+fresh_fruit = {
+    '사과': 10,
+    '바나나': 8,
+    '레몬': 5
+}
+
+def make_lemonade(count):
+    print('make_lemonade')
+    pass
+
+def out_of_stock():
+    print('out_of_stock')
+    pass
+
+def make_cider(count):
+    print('make_cider')
+    pass
+
+def slice_bananas(count):
+    print('slice_bananas')
+    pass
+
+class OutOfBananas(Exception):
+    pass
+
+def make_smoothies(count):
+    print('make_smoothies')
+    pass
+
+# count 변수가 if절에서 딱 한번 사용되는데, 변수할당은 좀..
+count = fresh_fruit.get('레몬', 0)
+if count:
+    make_lemonade(count)
+else:
+    out_of_stock()
+
+# 대입식을 사용하면 더 간결하게 표현할 수 있다.
+if count := fresh_fruit.get('레몬', 0):
+    make_lemonade(count)
+else:
+    out_of_stock()
+
+count = fresh_fruit.get('사과', 0)
+if count >= 4:
+    make_cider(count)
+else:
+    out_of_stock()
+
+
+# 대입식 (왈러스 연산자) 를 사용하면 간결해진다.
+if (count := fresh_fruit.get('사과', 0)) >= 4:
+    make_cider(count)
+else:
+    out_of_stock()
+
+pieces = 0
+count = fresh_fruit.get('바나나', 0)
+if count >= 2:
+    pieces = slice_bananas(count)
+
+try:
+    smoothies = make_smoothies(pieces)
+except OutOfBananas:
+    out_of_stock()
+
+# 대입식을 사용하면 더 간결하게 표현할 수 있다.
+pieces = 0
+if (count := fresh_fruit.get('바나나', 0)) >= 2:
+    pieces = slice_bananas(count)
+
+try:
+    smoothies = make_smoothies(pieces)
+except OutOfBananas:
+    out_of_stock()
+
+
